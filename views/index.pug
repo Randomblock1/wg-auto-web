@@ -1,0 +1,29 @@
+html
+    head 
+        link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css')
+    body 
+        .section 
+            .containers 
+                .container 
+                    form(method='POST' action='/submit')
+
+                        .field 
+                            label.label Name 
+                            .control 
+                                input.input(name='username' type='text' placeholder='username')
+                            p.help Be original! 
+
+                        .field 
+                            label.label Email 
+                            .control 
+                                input.input(name='email' type='email' placeholder='email')
+                            p.help Personal email only! 
+
+                        .field 
+                            label.label Secret Passphrase 
+                            .control 
+                                input.input(name='password' type='text' placeholder='password')
+                            p.help Shhhh....
+
+                        .control 
+                            button.button.is-primary Submit
