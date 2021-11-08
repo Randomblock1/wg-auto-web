@@ -8,19 +8,57 @@ const app = express();
 // use pug for rendering html
 app.set("view engine", "pug");
 
-// parse args for help
-// add arg to generate new config file?
-var argv = yargs(process.argv.slice(2))
+// parse args
+const args = yargs(process.argv.slice(2))
   .usage("Usage: $0 [options]")
   .example("$0", "Start the app")
+  .option("settings", {
+    alias: "s",
+    default: "./settings.yml",
+    describe: "YAML file to load settings from",
+    type: "string",
+  })
+  .command(
+    "generate",
+    "make a new config file",
+    function (yargs) {
+      return yargs.option("file", {
+        alias: "f",
+        describe: "where to save the file to",
+        default: "settings.yml",
+      });
+    },
+    function (yargs) {
+      // generate new valid setting yaml here
+      if (fs.existsSync(yargs.file)) {
+        console.log("File already exists. Moving to old_" + yargs.file);
+        fs.cpSync(yargs.file, "old_" + yargs.file);
+        fs.writeFileSync(yargs.file, "password: YourPasswordHere\nport: 3000");
+        console.log(
+          "Successfully generated new config file.\nYour config is now:\n\n" +
+            fs.readFileSync(yargs.file)
+        );
+        process.exit(0);
+      }
+    }
+  )
   .help("h")
   .alias("h", "help")
-  .version("version", "1.0");
+  .version("version", "1.0").argv;
 
 // parse settings.yml for settings
-const settings = YAML.parse(fs.readFileSync("./settings.yml", "utf8"));
-if (settings.password === undefined) {
-  throw new Error("No password specified in settings.yml");
+let settings;
+try {
+  settings = YAML.parse(fs.readFileSync(args.settings, "utf8"));
+} catch (ENOENT) {
+  throw new Error(
+    "No settings file exists, try running `node " + args.$0 + " generate`"
+  );
+}
+if (settings.password || settings.port === undefined) {
+  throw new Error(
+    "Invalid settings, make sure every required setting is defined"
+  );
 }
 
 console.log("The password is: " + settings.password);
@@ -62,6 +100,6 @@ app.post("/submit", (req, res, next) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("Server listening on http://localhost:3000 ...");
+app.listen(settings.port, () => {
+  console.log("Server listening on http://localhost:" + settings.port + " ...");
 });
