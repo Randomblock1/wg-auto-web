@@ -4,7 +4,7 @@ In development. It won't be useful to you, and it doesn't work right now.
 
 ## what
 
-wg-auto is a simple Node.js app that automatically creates a WireGuard peer config on a server,
+wg-auto-web is a simple Node.js app that automatically creates a WireGuard peer config on a server,
 and serves it to the user. It has very simple authentication (not very secure at all) but it's
 not meant to be production-ready code. I'm using it to share a VPN with friends without having
 to SSH into the server.
