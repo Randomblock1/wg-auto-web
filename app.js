@@ -1,26 +1,29 @@
 import formidable from "formidable";
 import express from "express";
 import yargs from "yargs";
+import YAML from "yaml";
+import fs from "fs";
 
 const app = express();
 // use pug for rendering html
 app.set("view engine", "pug");
 
-// parse args for now, should eventually use a settings json file
+// parse args for help
+// add arg to generate new config file?
 var argv = yargs(process.argv.slice(2))
-  .usage("Usage: $0 <password> [options]")
-  .command("<password>", "Specify the password for the application")
-  .example(
-    "$0 SecretPassword",
-    "Start the app with SecretPassword as the password"
-  )
+  .usage("Usage: $0 [options]")
+  .example("$0", "Start the app")
   .help("h")
   .alias("h", "help")
-  .version("version", "1.0")
-  .demandCommand(1).argv;
+  .version("version", "1.0");
 
-var password = argv._[0];
-console.log("The password is: " + password);
+// parse settings.yml for settings
+const settings = YAML.parse(fs.readFileSync("./settings.yml", "utf8"));
+if (settings.password === undefined) {
+  throw new Error("No password specified in settings.yml");
+}
+
+console.log("The password is: " + settings.password);
 
 // render views/index.pug when / accessed
 app.get("/", (req, res) => {
@@ -36,7 +39,7 @@ app.post("/submit", (req, res, next) => {
       next(err);
       return;
     }
-    if (fields.password[0] === password) {
+    if (fields.password[0] === settings.password) {
       // TODO: Actual backend functionality
       // Actual Name -> actual-name-wg0.conf
       // find what 10.66.66.0/24 ip isn't being used
