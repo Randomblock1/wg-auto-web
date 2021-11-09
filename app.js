@@ -33,13 +33,16 @@ const args = yargs(process.argv.slice(2))
       if (fs.existsSync(yargs.file)) {
         console.log("File already exists. Moving to old_" + yargs.file);
         fs.cpSync(yargs.file, "old_" + yargs.file);
-        fs.writeFileSync(yargs.file, "password: YourPasswordHere\nport: 3000");
-        console.log(
-          "Successfully generated new config file.\nYour config is now:\n\n" +
-            fs.readFileSync(yargs.file)
-        );
-        process.exit(0);
       }
+      fs.writeFileSync(
+        yargs.file,
+        "password: YourPasswordHere\nport: 3000\ndns: 1.1.1.1"
+      );
+      console.log(
+        "Successfully generated new config file.\nYour config is now:\n\n" +
+          fs.readFileSync(yargs.file)
+      );
+      process.exit(0);
     }
   )
   .help("h")
@@ -55,7 +58,7 @@ try {
     "No settings file exists, try running `node " + args.$0 + " generate`"
   );
 }
-if (settings.password || settings.port === undefined) {
+if (settings.password || settings.port || settings.dns === undefined) {
   throw new Error(
     "Invalid settings, make sure every required setting is defined"
   );
