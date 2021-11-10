@@ -8,16 +8,16 @@ html
                     form(method='POST' action='/submit')
 
                         .field 
-                            label.label Name 
+                            label.label Device Name 
                             .control 
-                                input.input(name='username' type='text' placeholder='username')
-                            p.help So I can keep track of who's using this.
+                                input.input(name='username' type='text' placeholder='your-device')
+                            p.help One config per device.
 
                         .field 
                             label.label Email 
                             .control 
                                 input.input(name='email' type='email' placeholder='email')
-                            p.help You will get the VPN emailed to you, personal email only!
+                            p.help You will get the VPN configuration emailed to you, personal email only!
 
                         .field 
                             label.label Secret Passphrase 
@@ -26,10 +26,10 @@ html
                             p.help Only those with the password can use this VPN.
 
                         .field 
-                            label.label Built-in Adblock
+                            label.label Custom DNS
                             .control 
                                 input.checkbox(name='adblock' type='checkbox' checked='checked')
-                            p.help Want to use the built-in adblock?
+                            p.help Use a custom DNS for extra features.
 
                         .control 
                             button.button.is-primary Submit
@@ -41,6 +41,6 @@ html
                                 .level
                                     .level-left
                                         .level-item
-                                            a.title.is-4(href="/") AutoVPN
+                                            a.title.is-4(href="/") wg-auto-web
                                     .level-right
                                         a.level-item(href="https://github.com/randomblock1/wg-auto-web") Source
