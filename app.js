@@ -1,39 +1,39 @@
-import formidable from "formidable";
-import express from "express";
-import yargs from "yargs";
-import YAML from "yaml";
-import fs from "fs";
-import { execSync } from "child_process";
+import formidable from 'formidable'
+import express from 'express'
+import yargs from 'yargs'
+import YAML from 'yaml'
+import fs from 'fs'
+import { execSync } from 'child_process'
 
-const app = express();
+const app = express()
 // use pug for rendering html
-app.set("view engine", "pug");
+app.set('view engine', 'pug')
 
 // parse args
 const args = yargs(process.argv.slice(2))
-  .usage("Usage: $0 [options]")
-  .example("$0", "Start the app")
-  .option("settings", {
-    alias: "s",
-    default: "./settings.yml",
-    describe: "YAML file to load settings from",
-    type: "string",
+  .usage('Usage: $0 [options]')
+  .example('$0', 'Start the app')
+  .option('settings', {
+    alias: 's',
+    default: './settings.yml',
+    describe: 'YAML file to load settings from',
+    type: 'string'
   })
   .command(
-    "generate",
-    "make a new config file",
+    'generate',
+    'make a new config file',
     function (yargs) {
-      return yargs.option("file", {
-        alias: "f",
-        describe: "where to save the file to",
-        default: "settings.yml",
-      });
+      return yargs.option('file', {
+        alias: 'f',
+        describe: 'where to save the file to',
+        default: 'settings.yml'
+      })
     },
     function (yargs) {
       // generate new valid setting yaml here
       if (fs.existsSync(yargs.file)) {
-        console.log("File already exists. Moving to old_" + yargs.file);
-        fs.cpSync(yargs.file, "old_" + yargs.file);
+        console.log('File already exists. Moving to old_' + yargs.file)
+        fs.cpSync(yargs.file, 'old_' + yargs.file)
       }
       fs.writeFileSync(
         yargs.file,
@@ -47,48 +47,48 @@ const args = yargs(process.argv.slice(2))
         psk: PRESHAREDKEYHERE
         endpoint: 0.0.0.0:1234 # where your server is publicly accessible from the internet (with wireguard port)
         interface: wg0 # the wireguard interface to use`
-      );
+      )
       console.log(
-        "Successfully generated new config file.\nYour config is now:\n\n" +
+        'Successfully generated new config file.\nYour config is now:\n\n' +
           fs.readFileSync(yargs.file)
-      );
-      process.exit(0);
+      )
+      process.exit(0)
     }
   )
-  .help("h")
-  .alias("h", "help")
-  .version("version", "1.0").argv;
+  .help('h')
+  .alias('h', 'help')
+  .version('version', '1.0').argv
 
 // parse settings.yml for settings
-let settings;
+let settings
 try {
-  settings = YAML.parse(fs.readFileSync(args.settings, "utf8"));
+  settings = YAML.parse(fs.readFileSync(args.settings, 'utf8'))
 } catch (ENOENT) {
   throw new Error(
-    "No settings file exists, try running `node " + args.$0 + " generate`"
-  );
+    'No settings file exists, try running `node ' + args.$0 + ' generate`'
+  )
 }
 if (settings.password || settings.port || settings.dns === undefined) {
   throw new Error(
-    "Invalid settings, make sure every required setting is defined"
-  );
+    'Invalid settings, make sure every required setting is defined'
+  )
 }
 
-console.log("The password is: " + settings.password);
+console.log('The password is: ' + settings.password)
 
 // render views/index.pug when / accessed
-app.get("/", (req, res) => {
-  res.render("index");
-});
+app.get('/', (req, res) => {
+  res.render('index')
+})
 
 // set up POST endpoint at /submit
-app.post("/submit", (req, res, next) => {
-  const form = formidable({});
+app.post('/submit', (req, res, next) => {
+  const form = formidable({})
 
   form.parse(req, (err, fields) => {
     if (err) {
-      next(err);
-      return;
+      next(err)
+      return
     }
     if (fields.password[0] === settings.password) {
       // TODO: Actual backend functionality
@@ -96,55 +96,66 @@ app.post("/submit", (req, res, next) => {
       // finally, show the config here with download
       // and email it to them with mailgun or something
       // probably save all info in a db
-      console.log(JSON.stringify(fields));
-      console.log("Generating new peer config...");
-      var generatedpkey = execSync("wg genkey").toString();
-      var generatedpubkey = execSync("echo '" + generatedpkey + "' | wg pubkey").toString();
+      console.log(JSON.stringify(fields))
+      console.log('Generating new peer config...')
+      const generatedpkey = execSync('wg genkey').toString()
+      const generatedpubkey = execSync("echo '" + generatedpkey + "' | wg pubkey").toString()
+      let generateddns
       if (fields.dns === true) {
-        var generateddns = settings.dns;
+        generateddns = settings.dns
       } else {
-        var generateddns = "1.1.1.1";
+        generateddns = '1.1.1.1'
       }
-      var generatedport = Math.floor(Math.random() * (65535 - 49152) + 49152);
+      const generatedport = Math.floor(Math.random() * (65535 - 49152) + 49152)
       let generatedaddress
       fs.readFile(
-        "/etc/wireguard/" + settings.interface + ".conf",
+        '/etc/wireguard/' + settings.interface + '.conf',
         function (err, data) {
-          if (err) throw err;
+          if (err) throw err
+          let i
           for (i = 2; i < 255; i++) {
             if (data.includes(settings.subnet + i)) {
-              console.log(settings.subnet.slice(0, -1) + i + " already taken");
+              console.log(settings.subnet.slice(0, -1) + i + ' already taken')
             } else {
-              var generatedaddress = settings.subnet.slice(0, -1) + i
+              generatedaddress = settings.subnet.slice(0, -1) + i
             }
           }
         }
-      );
-      fs.writeFileSync( 
+      )
+      // create config for user
+      fs.writeFileSync(
         // TODO: convert username to lowercase string
-        fields.username + ".conf",
-        "[Interface]" + 
-        "\nPrivateKey = " + generatedpkey +
-        "\nAddress = " + generatedaddress +
-        "\nDNS = " + generateddns +
-        "\n[Peer]\nPublicKey = " + settings.serverpubkey +
-        "\nPresharedKey = " + settings.psk +
-        "\nAllowedIPs =  " + settings.allowedips + ", " + settings.subnet +
-        "/24, " + settings.dns + "/32" +
-        "\nEndpoint = " + settings.endpoint
-      );
+        fields.username + '.conf',
+        '[Interface]' +
+        '\nPrivateKey = ' + generatedpkey +
+        '\nAddress = ' + generatedaddress +
+        '\nDNS = ' + generateddns +
+        '\n[Peer]\nPublicKey = ' + settings.serverpubkey +
+        '\nPresharedKey = ' + settings.psk +
+        '\nAllowedIPs =  ' + settings.allowedips + ', ' + settings.subnet + '/24, ' +
+        settings.dns + '/32' +
+        '\nEndpoint = ' + settings.endpoint
+      )
+      // add user to server config
+      fs.writeFileSync(
+        '/etc/wireguard/' + settings.interface + '.conf',
+        '[Peer]' +
+        '\nPublicKey = ' + generatedpubkey +
+        '\nPresharedKey = ' + generatedpsk +
+        '\nAllowedIPs = ' + generatedaddress + '/32'
+      )
       // ...and then we present it to the user.
-      res.render("success", {
+      res.render('success', {
         form: JSON.stringify(fields),
-        wgconfig: fs.readFileSync(fields.username + ".conf")
-      });
+        wgconfig: fs.readFileSync(fields.username + '.conf')
+      })
     } else {
-      res.render("fail");
+      res.render('fail')
       // should add rate limiting here or something
     }
-  });
-});
+  })
+})
 
 app.listen(settings.port, () => {
-  console.log("Server listening on http://localhost:" + settings.port + " ...");
-});
+  console.log('Server listening on http://localhost:' + settings.port + ' ...')
+})
