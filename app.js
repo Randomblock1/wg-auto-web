@@ -15,7 +15,7 @@ const args = yargs(process.argv.slice(2))
   .example('$0', 'Start the app')
   .option('settings', {
     alias: 's',
-    default: './settings.yml',
+    default: 'settings.yml',
     describe: 'YAML file to load settings from',
     type: 'string'
   })
@@ -38,13 +38,13 @@ const args = yargs(process.argv.slice(2))
       fs.writeFileSync(
         yargs.file,
         `password: YourPasswordHere # the user needs to know this to create a config
-        port: 3000 # where to expose the service (usually 80)
-        dns: 1.1.1.1 # set a custom dns here for pihole + etc.
-        # this allowedips ignores local network traffic, set to '0.0.0.0/0, ::/0' for routing all traffic
-        allowedips: ::/0, 1.0.0.0/8, 2.0.0.0/8, 3.0.0.0/8, 4.0.0.0/6, 8.0.0.0/7, 11.0.0.0/8, 12.0.0.0/6, 16.0.0.0/4, 32.0.0.0/3, 64.0.0.0/2, 128.0.0.0/3, 160.0.0.0/5, 168.0.0.0/6, 172.0.0.0/12, 172.32.0.0/11, 172.64.0.0/10, 172.128.0.0/9, 173.0.0.0/8, 174.0.0.0/7, 176.0.0.0/4, 192.0.0.0/9, 192.128.0.0/11, 192.160.0.0/13, 192.169.0.0/16, 192.170.0.0/15, 192.172.0.0/14, 192.176.0.0/12, 192.192.0.0/10, 193.0.0.0/8, 194.0.0.0/7, 196.0.0.0/6, 200.0.0.0/5, 208.0.0.0/4
-        subnet: 10.66.66.0 # what ip range to assign new configs, netmask 24 only
-        endpoint: 0.0.0.0:1234 # where your server is publicly accessible from the internet (with wireguard port)
-        interface: wg0 # the wireguard interface to use`
+port: 3000 # where to expose the service (usually 80)
+dns: 1.1.1.1 # set a custom dns here for pihole + etc.
+# this allowedips ignores local network traffic, set to '0.0.0.0/0, ::/0' for routing all traffic
+allowedips: ::/0, 1.0.0.0/8, 2.0.0.0/8, 3.0.0.0/8, 4.0.0.0/6, 8.0.0.0/7, 11.0.0.0/8, 12.0.0.0/6, 16.0.0.0/4, 32.0.0.0/3, 64.0.0.0/2, 128.0.0.0/3, 160.0.0.0/5, 168.0.0.0/6, 172.0.0.0/12, 172.32.0.0/11, 172.64.0.0/10, 172.128.0.0/9, 173.0.0.0/8, 174.0.0.0/7, 176.0.0.0/4, 192.0.0.0/9, 192.128.0.0/11, 192.160.0.0/13, 192.169.0.0/16, 192.170.0.0/15, 192.172.0.0/14, 192.176.0.0/12, 192.192.0.0/10, 193.0.0.0/8, 194.0.0.0/7, 196.0.0.0/6, 200.0.0.0/5, 208.0.0.0/4
+subnet: 10.66.66.0 # what ip range to assign new configs, netmask 24 only
+endpoint: 0.0.0.0:1234 # where your server is publicly accessible from the internet (with wireguard port)
+interface: wg0 # the wireguard interface to use`
       )
       console.log(
         'Successfully generated new config file.\nYour config is now:\n\n' +
@@ -60,13 +60,13 @@ const args = yargs(process.argv.slice(2))
 // parse settings.yml for settings
 let settings
 try {
-  settings = YAML.parse(fs.readFileSync(args.settings, 'utf8'))
+  settings = YAML.parse(fs.readFileSync(args.settings).toString())
 } catch (ENOENT) {
   throw new Error(
-    'No settings file exists, try running `node ' + args.$0 + ' generate`'
+    'No settings file exists at ' + args.settings + ', try running `node ' + args.$0 + ' generate`'
   )
 }
-if (settings.password || settings.port || settings.dns === undefined) {
+if ((settings.password || settings.port || settings.dns) === undefined) {
   throw new Error(
     'Invalid settings, make sure every required setting is defined'
   )
@@ -96,18 +96,21 @@ app.post('/submit', (req, res, next) => {
       // probably save all info in a db
       console.log(JSON.stringify(fields))
       console.log('Generating new peer config...')
-      var generatedpkey = execSync('wg genkey').toString()
-      var generatedpubkey = execSync(
+      let generatedpkey
+      generatedpkey = execSync('wg genkey').toString()
+      let generatedpubkey
+      generatedpubkey = execSync(
         "echo '" + generatedpkey + "' | wg pubkey"
       ).toString()
-      var generatedpsk = execSync('wg genpsk').toString()
-      var generateddns
+      let generatedpsk
+      generatedpsk = execSync('wg genpsk').toString()
+      let generateddns
       if (fields.dns === true) {
         generateddns = settings.dns
       } else {
         generateddns = '1.1.1.1'
       }
-      var generatedaddress
+      let generatedaddress
       fs.readFile(
         '/etc/wireguard/' + settings.interface + '.conf',
         function (err, data) {
@@ -128,13 +131,13 @@ app.post('/submit', (req, res, next) => {
         fields.username + '.conf',
         '[Interface]' +
           '\nPrivateKey = ' +
-          generatedpkey +
+          execSync('wg genkey').toString() +
           '\nAddress = ' +
           generatedaddress +
           '\nDNS = ' +
           generateddns +
           '\n[Peer]\nPublicKey = ' +
-          execSync(`wg show ${interface} public-key`).toString() +
+          execSync('wg show ' + settings.interface + ' public-key').toString() +
           '\nPresharedKey = ' +
           generatedpsk +
           '\nAllowedIPs =  ' +
@@ -151,14 +154,14 @@ app.post('/submit', (req, res, next) => {
       fs.writeFileSync(
         '/etc/wireguard/' + settings.interface + '.conf',
         '[Peer]' +
-          '\nPublicKey = ' +
-          generatedpubkey +
-          '\nPresharedKey = ' +
-          generatedpsk +
-          '\nAllowedIPs = ' +
-          generatedaddress +
-          '/32',
-          {flag: "a"}
+        '\nPublicKey = ' +
+        generatedpubkey +
+        '\nPresharedKey = ' +
+        generatedpsk +
+        '\nAllowedIPs = ' +
+        generatedaddress +
+        '/32',
+        { flag: 'a' }
       )
       // ...and then we present it to the user.
       res.render('success', {
