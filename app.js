@@ -157,7 +157,8 @@ app.post('/submit', (req, res, next) => {
           generatedpsk +
           '\nAllowedIPs = ' +
           generatedaddress +
-          '/32'
+          '/32',
+          {flag: "a"}
       )
       // ...and then we present it to the user.
       res.render('success', {
