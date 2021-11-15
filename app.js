@@ -66,7 +66,7 @@ try {
     'No settings file exists at ' + args.settings + ', try running `node ' + args.$0 + ' generate`'
   )
 }
-if ((settings.password || settings.port || settings.dns) === undefined) {
+if ((settings.password || settings.port || settings.dns || settings.interface || settings.allowedips || settings.subnet || settings.endpoint) === undefined) {
   throw new Error(
     'Invalid settings, make sure every required setting is defined'
   )
