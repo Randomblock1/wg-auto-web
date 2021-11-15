@@ -43,8 +43,6 @@ const args = yargs(process.argv.slice(2))
         # this allowedips ignores local network traffic, set to '0.0.0.0/0, ::/0' for routing all traffic
         allowedips: ::/0, 1.0.0.0/8, 2.0.0.0/8, 3.0.0.0/8, 4.0.0.0/6, 8.0.0.0/7, 11.0.0.0/8, 12.0.0.0/6, 16.0.0.0/4, 32.0.0.0/3, 64.0.0.0/2, 128.0.0.0/3, 160.0.0.0/5, 168.0.0.0/6, 172.0.0.0/12, 172.32.0.0/11, 172.64.0.0/10, 172.128.0.0/9, 173.0.0.0/8, 174.0.0.0/7, 176.0.0.0/4, 192.0.0.0/9, 192.128.0.0/11, 192.160.0.0/13, 192.169.0.0/16, 192.170.0.0/15, 192.172.0.0/14, 192.176.0.0/12, 192.192.0.0/10, 193.0.0.0/8, 194.0.0.0/7, 196.0.0.0/6, 200.0.0.0/5, 208.0.0.0/4
         subnet: 10.66.66.0 # what ip range to assign new configs, netmask 24 only
-        serverpubkey: YOURPUBKEYHERE
-        psk: PRESHAREDKEYHERE
         endpoint: 0.0.0.0:1234 # where your server is publicly accessible from the internet (with wireguard port)
         interface: wg0 # the wireguard interface to use`
       )
@@ -98,16 +96,18 @@ app.post('/submit', (req, res, next) => {
       // probably save all info in a db
       console.log(JSON.stringify(fields))
       console.log('Generating new peer config...')
-      const generatedpkey = execSync('wg genkey').toString()
-      const generatedpubkey = execSync("echo '" + generatedpkey + "' | wg pubkey").toString()
-      let generateddns
+      var generatedpkey = execSync('wg genkey').toString()
+      var generatedpubkey = execSync(
+        "echo '" + generatedpkey + "' | wg pubkey"
+      ).toString()
+      var generatedpsk = execSync('wg genpsk').toString()
+      var generateddns
       if (fields.dns === true) {
         generateddns = settings.dns
       } else {
         generateddns = '1.1.1.1'
       }
-      const generatedport = Math.floor(Math.random() * (65535 - 49152) + 49152)
-      let generatedaddress
+      var generatedaddress
       fs.readFile(
         '/etc/wireguard/' + settings.interface + '.conf',
         function (err, data) {
@@ -127,22 +127,37 @@ app.post('/submit', (req, res, next) => {
         // TODO: convert username to lowercase string
         fields.username + '.conf',
         '[Interface]' +
-        '\nPrivateKey = ' + generatedpkey +
-        '\nAddress = ' + generatedaddress +
-        '\nDNS = ' + generateddns +
-        '\n[Peer]\nPublicKey = ' + settings.serverpubkey +
-        '\nPresharedKey = ' + settings.psk +
-        '\nAllowedIPs =  ' + settings.allowedips + ', ' + settings.subnet + '/24, ' +
-        settings.dns + '/32' +
-        '\nEndpoint = ' + settings.endpoint
+          '\nPrivateKey = ' +
+          generatedpkey +
+          '\nAddress = ' +
+          generatedaddress +
+          '\nDNS = ' +
+          generateddns +
+          '\n[Peer]\nPublicKey = ' +
+          execSync(`wg show ${interface} public-key`).toString() +
+          '\nPresharedKey = ' +
+          generatedpsk +
+          '\nAllowedIPs =  ' +
+          settings.allowedips +
+          ', ' +
+          settings.subnet +
+          '/24, ' +
+          settings.dns +
+          '/32' +
+          '\nEndpoint = ' +
+          settings.endpoint
       )
       // add user to server config
       fs.writeFileSync(
         '/etc/wireguard/' + settings.interface + '.conf',
         '[Peer]' +
-        '\nPublicKey = ' + generatedpubkey +
-        '\nPresharedKey = ' + generatedpsk +
-        '\nAllowedIPs = ' + generatedaddress + '/32'
+          '\nPublicKey = ' +
+          generatedpubkey +
+          '\nPresharedKey = ' +
+          generatedpsk +
+          '\nAllowedIPs = ' +
+          generatedaddress +
+          '/32'
       )
       // ...and then we present it to the user.
       res.render('success', {
@@ -155,7 +170,6 @@ app.post('/submit', (req, res, next) => {
     }
   })
 })
-
 app.listen(settings.port, () => {
   console.log('Server listening on http://localhost:' + settings.port + ' ...')
 })
