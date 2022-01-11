@@ -119,7 +119,7 @@ app.post('/submit', (req, res, next) => {
             } else {
               generatedaddress = settings.subnet.toString().slice(0, -1) + i
               console.log(generatedaddress + ' is unused. Using it.')
-              return
+              break
             }
           }
       // create config for user
