@@ -176,9 +176,10 @@ app.post('/submit', (req, res, next) => {
         '/32',
       )
       // ...and then we present it to the user.
+      let download = new Blob(fs.readFileSync(fields.username + '.conf', 'utf8'), {type : 'text/plain'})
       res.render('success', {
         form: JSON.stringify(fields),
-        wgconfig: fs.readFileSync(fields.username + '.conf', 'utf8')
+        download: download
       })
     } else {
       res.render('fail')

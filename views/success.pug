@@ -5,6 +5,7 @@ html
         .section
             p Your submission has been accepted.
             p Input: 
-            p #{form}
+            code #{form}
             p WireGuard config: 
-            code #{wgconfig}
+            a(href='#{download}' download) Click here to download your config.
+            p Make sure to save it in a safe place: this will only be shown once!
