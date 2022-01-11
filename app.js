@@ -112,15 +112,15 @@ app.post('/submit', (req, res, next) => {
       }
       let generatedaddress
       fs.readFile(
-        '/etc/wireguard/' + settings.interface + '.conf',
+        '/etc/wireguard/' + settings.interface + '.conf', 'utf8',
         function (err, data) {
           if (err) throw err
           let i
           for (i = 2; i < 255; i++) {
-            if (data.includes(settings.subnet + i)) {
-              console.log(settings.subnet.slice(0, -1) + i + ' already taken')
+            if (data.includes(settings.subnet.toString().slice(0, -1) + i)) {
+              console.log(settings.subnet.toString().slice(0, -1) + i + ' already taken')
             } else {
-              generatedaddress = settings.subnet.slice(0, -1) + i
+              generatedaddress = settings.subnet.toString().slice(0, -1) + i
             }
           }
         }
@@ -151,17 +151,18 @@ app.post('/submit', (req, res, next) => {
           settings.endpoint
       )
       // used only for dry run
-      fs.writeFileSync('test-' + settings.interface + '.conf', fs.readFile('/etc/wireguard/' + settings.interface + '.conf'))
+      fs.writeFileSync('test-' + settings.interface + '.conf', fs.readFileSync('/etc/wireguard/' + settings.interface + '.conf', 'utf8'))
       // add user to server config
       fs.appendFileSync(
         //'/etc/wireguard/' + settings.interface + '.conf',
         'test-' + settings.interface + '.conf',
-        '[Peer]' +
+        '### Client ' + form.username +
+        '\n[Peer]' +
         '\nPublicKey = ' +
         generatedpubkey +
-        '\nPresharedKey = ' +
+        'PresharedKey = ' +
         generatedpsk +
-        '\nAllowedIPs = ' +
+        'AllowedIPs = ' +
         generatedaddress +
         '/32',
       )
