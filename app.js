@@ -118,20 +118,21 @@ app.post('/submit', (req, res, next) => {
         generateddns = '1.1.1.1'
       }
       let generatedaddress
-      let wgconfig = fs.readFileSync('/etc/wireguard/' + settings.interface + '.conf', 'utf8')
+      const wgconfig = fs.readFileSync('/etc/wireguard/' + settings.interface + '.conf', 'utf8')
       // find unused WireGuard peer IP
       let i
-          for (i = 2; i < 255; i++) {
-            if (wgconfig.includes(settings.subnet.toString().slice(0, -1) + i)) {
-              console.log(settings.subnet.toString().slice(0, -1) + i + ' already taken')
-            } else {
-              generatedaddress = settings.subnet.toString().slice(0, -1) + i
-              console.log(generatedaddress + ' is unused. Using it.')
-              break
-            }
-          }
+      for (i = 2; i < 255; i++) {
+        if (wgconfig.includes(settings.subnet.toString().slice(0, -1) + i)) {
+          console.log(settings.subnet.toString().slice(0, -1) + i + ' already taken')
+        } else {
+          generatedaddress = settings.subnet.toString().slice(0, -1) + i
+          console.log(generatedaddress + ' is unused. Using it.')
+          break
+        }
+      }
       // create config for user
-      let userconfig = 'client-' + fields.username + '.conf'
+      let userconfig
+      userconfig = 'client-' + fields.username + '.conf'
       fs.writeFileSync(
         // TODO: convert username to lowercase string
         userconfig,
@@ -159,7 +160,7 @@ app.post('/submit', (req, res, next) => {
       // save to test-[interface].conf on a dry run
       let saveto
       if (args.dryRun === true) {
-        saveto =  'test-' + settings.interface + '.conf'
+        saveto = 'test-' + settings.interface + '.conf'
       } else {
         saveto = '/etc/wireguard/' + settings.interface + '.conf'
       }
@@ -174,7 +175,7 @@ app.post('/submit', (req, res, next) => {
         generatedpsk +
         'AllowedIPs = ' +
         generatedaddress +
-        '/32',
+        '/32'
       )
       // ...and then we present it to the user.
       res.render('success', {
