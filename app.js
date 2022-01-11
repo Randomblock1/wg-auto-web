@@ -156,7 +156,7 @@ app.post('/submit', (req, res, next) => {
       fs.appendFileSync(
         //'/etc/wireguard/' + settings.interface + '.conf',
         'test-' + settings.interface + '.conf',
-        '### Client ' + form.username +
+        '### Client ' + fields.username +
         '\n[Peer]' +
         '\nPublicKey = ' +
         generatedpubkey +
