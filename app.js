@@ -121,6 +121,8 @@ app.post('/submit', (req, res, next) => {
               console.log(settings.subnet.toString().slice(0, -1) + i + ' already taken')
             } else {
               generatedaddress = settings.subnet.toString().slice(0, -1) + i
+              console.log(generatedaddress + ' is unused. Using it.')
+              return
             }
           }
         }
