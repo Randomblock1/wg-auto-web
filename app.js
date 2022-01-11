@@ -127,13 +127,6 @@ app.post('/submit', (req, res, next) => {
           }
         }
       )
-      // temporary fix. will use readFileSync later
-      await sleep(500)
-      function sleep(ms) {
-        return new Promise((resolve) => {
-          setTimeout(resolve, ms);
-        });
-      } 
       // create config for user
       fs.writeFileSync(
         // TODO: convert username to lowercase string
