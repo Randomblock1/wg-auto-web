@@ -111,13 +111,10 @@ app.post('/submit', (req, res, next) => {
         generateddns = '1.1.1.1'
       }
       let generatedaddress
-      fs.readFile(
-        '/etc/wireguard/' + settings.interface + '.conf', 'utf8',
-        function (err, data) {
-          if (err) throw err
-          let i
+      wgconfig = fs.readFileSync('/etc/wireguard/' + settings.interface + '.conf', 'utf8')
+      let i
           for (i = 2; i < 255; i++) {
-            if (data.includes(settings.subnet.toString().slice(0, -1) + i)) {
+            if (wgconfig.includes(settings.subnet.toString().slice(0, -1) + i)) {
               console.log(settings.subnet.toString().slice(0, -1) + i + ' already taken')
             } else {
               generatedaddress = settings.subnet.toString().slice(0, -1) + i
@@ -125,8 +122,6 @@ app.post('/submit', (req, res, next) => {
               return
             }
           }
-        }
-      )
       // create config for user
       fs.writeFileSync(
         // TODO: convert username to lowercase string
