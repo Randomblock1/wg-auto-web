@@ -111,7 +111,7 @@ app.post('/submit', (req, res, next) => {
         generateddns = '1.1.1.1'
       }
       let generatedaddress
-      wgconfig = fs.readFileSync('/etc/wireguard/' + settings.interface + '.conf', 'utf8')
+      let wgconfig = fs.readFileSync('/etc/wireguard/' + settings.interface + '.conf', 'utf8')
       let i
           for (i = 2; i < 255; i++) {
             if (wgconfig.includes(settings.subnet.toString().slice(0, -1) + i)) {
