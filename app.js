@@ -19,6 +19,12 @@ const args = yargs(process.argv.slice(2))
     describe: 'YAML file to load settings from',
     type: 'string'
   })
+  .option('dry-run', {
+    alias: 'd',
+    default: false,
+    describe: 'Write config to test-[interface].conf instead of actual WireGuard conf',
+    type: 'boolean'
+  })
   .command(
     'generate',
     'make a new config file',
@@ -30,7 +36,7 @@ const args = yargs(process.argv.slice(2))
       })
     },
     function (yargs) {
-      // generate new valid setting yaml here
+      // generate new valid settings yaml
       if (fs.existsSync(yargs.file)) {
         console.log('File already exists. Moving to old_' + yargs.file)
         fs.cpSync(yargs.file, 'old_' + yargs.file)
@@ -66,6 +72,7 @@ try {
     'No settings file exists at ' + args.settings + ', try running `node ' + args.$0 + ' generate`'
   )
 }
+// make sure all needed settings are set (todo: check for correct types)
 if ((settings.password || settings.port || settings.dns || settings.interface || settings.allowedips || settings.subnet || settings.endpoint) === undefined) {
   throw new Error(
     'Invalid settings, make sure every required setting is defined'
@@ -89,7 +96,7 @@ app.post('/submit', (req, res, next) => {
       return
     }
     if (fields.password[0] === settings.password) {
-      // TODO: Actual backend functionality
+      // TODO: parse username and remove spaces/symbols
       // Actual Name -> actual-name-wg0.conf
       // finally, show the config here with download
       // and email it to them with mailgun or something
@@ -112,6 +119,7 @@ app.post('/submit', (req, res, next) => {
       }
       let generatedaddress
       let wgconfig = fs.readFileSync('/etc/wireguard/' + settings.interface + '.conf', 'utf8')
+      // find unused WireGuard peer IP
       let i
           for (i = 2; i < 255; i++) {
             if (wgconfig.includes(settings.subnet.toString().slice(0, -1) + i)) {
@@ -147,12 +155,16 @@ app.post('/submit', (req, res, next) => {
           '\nEndpoint = ' +
           settings.endpoint
       )
-      // used only for dry run
-      fs.writeFileSync('test-' + settings.interface + '.conf', wgconfig)
+      // save to test-[interface].conf on a dry run
+      let saveto
+      if (args.dryRun === true) {
+        saveto =  'test-' + settings.interface + '.conf'
+      } else {
+        saveto = '/etc/wireguard/' + settings.interface + '.conf'
+      }
       // add user to server config
       fs.appendFileSync(
-        //'/etc/wireguard/' + settings.interface + '.conf',
-        'test-' + settings.interface + '.conf',
+        saveto,
         '### Client ' + fields.username +
         '\n[Peer]' +
         '\nPublicKey = ' +
@@ -166,7 +178,7 @@ app.post('/submit', (req, res, next) => {
       // ...and then we present it to the user.
       res.render('success', {
         form: JSON.stringify(fields),
-        wgconfig: fs.readFileSync(fields.username + '.conf')
+        wgconfig: fs.readFileSync(fields.username + '.conf', 'utf8')
       })
     } else {
       res.render('fail')
