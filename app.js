@@ -150,9 +150,12 @@ app.post('/submit', (req, res, next) => {
           '\nEndpoint = ' +
           settings.endpoint
       )
+      // used only for dry run
+      fs.writeFileSync('test-' + settings.interface + '.conf', fs.readFile('/etc/wireguard/' + settings.interface + '.conf'))
       // add user to server config
-      fs.writeFileSync(
-        '/etc/wireguard/' + settings.interface + '.conf',
+      fs.appendFileSync(
+        //'/etc/wireguard/' + settings.interface + '.conf',
+        'test-' + settings.interface + '.conf',
         '[Peer]' +
         '\nPublicKey = ' +
         generatedpubkey +
@@ -161,7 +164,6 @@ app.post('/submit', (req, res, next) => {
         '\nAllowedIPs = ' +
         generatedaddress +
         '/32',
-        { flag: 'a' }
       )
       // ...and then we present it to the user.
       res.render('success', {
