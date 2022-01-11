@@ -148,7 +148,7 @@ app.post('/submit', (req, res, next) => {
           settings.endpoint
       )
       // used only for dry run
-      fs.writeFileSync('test-' + settings.interface + '.conf', fs.readFileSync('/etc/wireguard/' + settings.interface + '.conf', 'utf8'))
+      fs.writeFileSync('test-' + settings.interface + '.conf', wgconfig)
       // add user to server config
       fs.appendFileSync(
         //'/etc/wireguard/' + settings.interface + '.conf',
