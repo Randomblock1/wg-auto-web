@@ -131,7 +131,7 @@ app.post('/submit', (req, res, next) => {
             }
           }
       // create config for user
-      let userconfig = 'client- ' + fields.username + '.conf'
+      let userconfig = 'client-' + fields.username + '.conf'
       fs.writeFileSync(
         // TODO: convert username to lowercase string
         userconfig,
