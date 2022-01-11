@@ -179,7 +179,7 @@ app.post('/submit', (req, res, next) => {
       // ...and then we present it to the user.
       res.render('success', {
         form: JSON.stringify(fields),
-        filedata: fs.readFileSync(userconfig, 'utf8'),
+        filedata: fs.readFileSync(userconfig, 'base64'),
         savename: userconfig
       })
     } else {
