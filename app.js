@@ -131,9 +131,10 @@ app.post('/submit', (req, res, next) => {
             }
           }
       // create config for user
+      let userconfig = 'client- ' + fields.username + '.conf'
       fs.writeFileSync(
         // TODO: convert username to lowercase string
-        fields.username + '.conf',
+        userconfig,
         '[Interface]' +
           '\nPrivateKey = ' +
           execSync('wg genkey').toString() +
@@ -176,10 +177,10 @@ app.post('/submit', (req, res, next) => {
         '/32',
       )
       // ...and then we present it to the user.
-      let download = new Blob(fs.readFileSync(fields.username + '.conf', 'utf8'), {type : 'text/plain'})
       res.render('success', {
         form: JSON.stringify(fields),
-        download: download
+        filedata: fs.readFileSync(userconfig, 'utf8'),
+        savename: userconfig
       })
     } else {
       res.render('fail')
