@@ -1,6 +1,10 @@
 # wg-auto-web
 
-In development. It won't be useful to you, and it doesn't work right now. It also has NOT been tested, so it will probably break your config.
+Early development
+
+Should work, mostly. Expect at least a few bugs. Not all planned features are implemented.
+
+For example, a username with spaces or special characters in it is not currently handled properly. Email integration is also not implemented, nor is saving the form inputs to a database, or rate-limiting failed requests.
 
 ## What
 
