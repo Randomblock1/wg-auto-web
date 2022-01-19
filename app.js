@@ -3,7 +3,8 @@ import express from 'express'
 import yargs from 'yargs'
 import YAML from 'yaml'
 import fs from 'fs'
-import { execSync } from 'child_process'
+import execSync from 'child_process'
+import sanitize from 'sanitize-filename'
 
 const app = express()
 // use pug for rendering html
@@ -103,6 +104,8 @@ app.post('/submit', (req, res, next) => {
       // probably save all info in a db
       console.log(JSON.stringify(fields))
       console.log('Generating new peer config...')
+      // sanitize username
+      let parsedusername = sanitize(fields.username.toString())
       let generatedpkey
       generatedpkey = execSync('wg genkey').toString()
       let generatedpubkey
@@ -132,7 +135,7 @@ app.post('/submit', (req, res, next) => {
       }
       // create config for user
       let userconfig
-      userconfig = 'client-' + fields.username + '.conf'
+      userconfig = 'client-' + parsedusername + '.conf'
       fs.writeFileSync(
         // TODO: convert username to lowercase string
         userconfig,

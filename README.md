@@ -4,7 +4,7 @@ Early development
 
 Should work, mostly. Expect at least a few bugs. Not all planned features are implemented.
 
-For example, a username with spaces or special characters in it is not currently handled properly. Email integration is also not implemented, nor is saving the form inputs to a database, or rate-limiting failed requests.
+For example, a package is used to sanitize filenames, but not completely handled properly. Email integration is also not implemented, nor is saving the form inputs to a database, or rate-limiting failed requests.
 
 ## What
 
@@ -26,7 +26,7 @@ eventually.
 
 ## Install
 
-```
+```bash
 git clone https://github.com/Randomblock1/wg-auto-web
 
 cd wg-auto-web
@@ -54,7 +54,7 @@ generates a new valid (but not working) settings config, and moves the old one t
 
 Below is a sample settings file. Without a proper settings file, this will not work as intended.
 
-```
+```bash
 password: YourPasswordHere
 # This is the password needed to allow a user to generate a config via the web interface form.
 
