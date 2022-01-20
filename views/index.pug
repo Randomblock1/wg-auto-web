@@ -1,46 +1,25 @@
-html
-    head 
-        link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css')
-    body 
-        .section 
-            .containers 
-                .container 
-                    form(method='POST' action='/submit')
+doctype html
+head 
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover")
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css')
+    title WireGuard VPN
+body 
+    .section 
+        .container
+            h1.title WireGuard VPN
+            h2.subtitle Invite only
+            div.content
+                p This invite-only, private WireGuard VPN is quick, stealthy, and fast.
 
-                        .field 
-                            label.label Device Name 
-                            .control 
-                                input.input(name='username' type='text' placeholder='your-device')
-                            p.help One config per device.
+            a.button.button.is-primary(href="/form") Use VPN
 
-                        .field 
-                            label.label Email 
-                            .control 
-                                input.input(name='email' type='email' placeholder='email')
-                            p.help You will get the VPN configuration emailed to you, personal email only!
+            hr
 
-                        .field 
-                            label.label Secret Passphrase 
-                            .control 
-                                input.input(name='password' type='text' placeholder='password')
-                            p.help Only those with the password can use this VPN.
-
-                        .field 
-                            label.label Custom DNS
-                            .control 
-                                input.checkbox(name='dns' type='checkbox' checked='checked')
-                            p.help Use a custom DNS for extra features.
-
-                        .control 
-                            button.button.is-primary Submit
-
-                        hr
-
-                        footer.footer
-                            .container
-                                .level
-                                    .level-left
-                                        .level-item
-                                            a.title.is-4(href="/") wg-auto-web
-                                    .level-right
-                                        a.level-item(href="https://github.com/randomblock1/wg-auto-web") Source
+        footer.footer
+            .container
+                .level
+                    .level-left
+                        a.title.is-4(href="/") wg-auto-web
+                    .level-right
+                        a.level-item(href="https://github.com/randomblock1/wg-auto-web") Source code

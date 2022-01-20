@@ -4,7 +4,7 @@ Early development
 
 Should work, mostly. Expect at least a few bugs. Not all planned features are implemented.
 
-For example, a package is used to sanitize filenames, but not completely handled properly. Email integration is also not implemented, nor is saving the form inputs to a database, or rate-limiting failed requests.
+For example, a package is used to sanitize filenames, but not completely handled properly. Email integration is also not implemented, or rate-limiting failed requests. New account data is logged to accounts.json.
 
 ## What
 

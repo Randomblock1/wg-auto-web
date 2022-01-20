@@ -82,9 +82,13 @@ if ((settings.password || settings.port || settings.dns || settings.interface ||
 
 console.log('The password is: ' + settings.password)
 
-// render views/index.pug when / accessed
+// render views when accessed
 app.get('/', (req, res) => {
   res.render('index')
+})
+
+app.get('/form', (req, res) => {
+  res.render('form')
 })
 
 // set up POST endpoint at /submit
@@ -103,6 +107,7 @@ app.post('/submit', (req, res, next) => {
       // and email it to them with mailgun or something
       // probably save all info in a db
       console.log(JSON.stringify(fields))
+      fs.appendFileSync("accounts.json", JSON.stringify(fields))
       console.log('Generating new peer config...')
       // sanitize username
       let parsedusername = sanitize(fields.username.toString())
