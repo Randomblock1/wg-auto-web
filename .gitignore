@@ -1,6 +1,8 @@
 # Project specific
 settings.yml
 old_settings.yml
+accounts.json
+*.conf
 
 # Logs
 logs
